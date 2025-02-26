@@ -1,69 +1,52 @@
-# Welcome to your Lovable project
+# ReplicaDB
 
-## Project info
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react)
+![Next.js](https://img.shields.io/badge/Next.js-14+-000000?logo=next.js)
 
-**URL**: https://lovable.dev/projects/3dc907ca-7425-458a-9daa-ee821429cad0
+**Your All-in-One Data Solution Platform** - Discover, Synthesize, and Analyze datasets with powerful AI-assisted tools.
 
-## How can I edit this code?
+![DataForge Studio Banner](https://via.placeholder.com/1920x600.png?text=DataForge+Studio+Banner)
 
-There are several ways of editing your application.
+## 🌟 Features
 
-**Use Lovable**
+### 🔍 Dataset Discovery
+- **Intelligent Search**: Find relevant datasets using natural language queries
+- **Advanced Filters**: Filter by domain, size, format, and data quality
+- **Dataset Previews**: Preview sample data and statistics before download
+- **Community Ratings**: See user ratings and quality indicators
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/3dc907ca-7425-458a-9daa-ee821429cad0) and start prompting.
+### 🧪 Data Synthesizer
+- **AI-Powered Generation**: Create synthetic datasets using smart templates
+- **Custom Parameters**: Define data schemas, distributions, and relationships
+- **Privacy Protection**: Generate GDPR-compliant synthetic data
+- **Export Formats**: CSV, JSON, Parquet, and SQL formats supported
 
-Changes made via Lovable will be committed automatically to this repo.
+### 📊 Analytics Studio
+- **Smart Dashboard Builder**: Drag-and-drop visualization toolkit
+- **Auto-Insights**: Automatic pattern detection and statistical analysis
+- **Collaborative Workspaces**: Real-time team collaboration features
+- **Report Generator**: Export professional PDF/HTML reports
 
-**Use your preferred IDE**
+## 🚀 Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
+- Node.js v18+
+- PostgreSQL
+- Python 3.10+ (for ML features)
+- Redis (for caching)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
+```bash
+# Clone repository
+git clone https://github.com/yourusername/dataforge-studio.git
 
-Follow these steps:
+# Install dependencies
+cd dataforge-studio
+npm install
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Set up environment variables
+cp .env.example .env.local
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/3dc907ca-7425-458a-9daa-ee821429cad0) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)

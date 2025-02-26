@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Discovery from "./pages/Discovery";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
+import Blog from "./pages/Blog";
 
 // Placeholder pages (to be implemented)
 const Synthesizer = () => (
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/discovery" element={<Discovery />} />
           <Route path="/synthesizer" element={<Synthesizer />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/blog" element={<Blog />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

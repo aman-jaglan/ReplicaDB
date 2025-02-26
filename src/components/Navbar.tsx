@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Database, LayoutDashboard, BarChart3, Menu, X } from "lucide-react";
+import { Database, LayoutDashboard, BarChart3, Menu, X, BookOpen } from "lucide-react";
 
 const NavItem = ({ 
   to, 
@@ -61,7 +61,7 @@ const Navbar = () => {
           <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
             <Database className="w-4 h-4 text-primary-foreground" />
           </div>
-          <span className="font-medium text-xl">DataSynth</span>
+          <span className="font-medium text-xl">ReplicaDB</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -83,6 +83,12 @@ const Navbar = () => {
             icon={BarChart3} 
             label="Analytics" 
             isActive={location.pathname === '/analytics'} 
+          />
+          <NavItem 
+            to="/blog" 
+            icon={BookOpen} 
+            label="Blog" 
+            isActive={location.pathname === '/blog'} 
           />
         </nav>
 
@@ -116,6 +122,10 @@ const Navbar = () => {
             <Link to="/analytics" className="flex items-center space-x-2 p-2 hover:bg-secondary rounded-md">
               <BarChart3 className="w-4 h-4" />
               <span>Analytics</span>
+            </Link>
+            <Link to="/blog" className="flex items-center space-x-2 p-2 hover:bg-secondary rounded-md">
+              <BookOpen className="w-4 h-4" />
+              <span>Blog</span>
             </Link>
             <div className="flex flex-col space-y-2 pt-2 border-t border-border">
               <Button variant="outline" size="sm">Sign In</Button>

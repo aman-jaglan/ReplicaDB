@@ -1,497 +1,531 @@
-
-import { useState, useRef } from "react";
+import { useEffect, useState } from "react";
+import {
+  Upload,
+  FileText,
+  Filter,
+  Table as TableIcon,
+  BarChart2,
+  PieChart,
+  LineChart,
+  RefreshCw,
+  X,
+  AlignLeft,
+  Download,
+  Search,
+  ScatterChart,
+  MapPin,
+  ChevronsUpDown,
+  TrendingUp,
+  Lightbulb,
+  Share2,
+  FileCode,
+  Calculator,
+  Sigma,
+  Palette,
+  BarChart,
+  Plus,
+  Trash2,
+  LayoutDashboard,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Layers,
+  ClipboardList,
+  ChevronDown,
+  Copy,
+  Box,
+  Activity,
+  Grid,
+  Map,
+  Network,
+  Radar,
+  TreeDeciduous,
+  GitBranch,
+  Fingerprint,
+  Binary,
+  Boxes,
+  Calendar
+} from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { 
-  Upload, 
-  FileText, 
-  Filter, 
-  Table as TableIcon, 
-  BarChart2, 
-  PieChart, 
-  LineChart, 
-  RefreshCw, 
-  X, 
-  AlignLeft, 
-  Download,
-  Search
-} from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-
-// Define the CSV data structure
-interface CSVData {
-  headers: string[];
-  rows: string[][];
-  originalRows: string[][];
-}
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import { InputPopover } from "@/components/input-popover";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { useTheme } from "@/hooks/use-theme";
+import { ModeToggle } from "@/components/mode-toggle";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useSearchParams } from "react-router-dom";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+import { DatePicker } from "@/components/date-picker"
+import { Button } from "@/components/ui/button";
 
 const Analytics = () => {
-  const [csvData, setCsvData] = useState<CSVData | null>(null);
-  const [activeView, setActiveView] = useState("table");
-  const [uploadStage, setUploadStage] = useState<"initial" | "uploaded" | "processing">("initial");
-  const [loading, setLoading] = useState(false);
-  const [filterColumn, setFilterColumn] = useState<string | null>(null);
-  const [filterValue, setFilterValue] = useState("");
-  const [excludeNull, setExcludeNull] = useState(false);
-  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const { setTheme } = useTheme();
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [inputValue, setInputValue] = useState("");
+  const [sliderValue, setSliderValue] = useState([50]);
+  const [selectedRadio, setSelectedRadio] = useState("option1");
+  const [checkedItems, setCheckedItems] = useState<string[]>([]);
 
-  // Handle file upload
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    setIsDarkTheme(storedTheme === "dark");
+  }, []);
 
-    setLoading(true);
-    setUploadStage("processing");
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const text = e.target?.result as string;
-        const lines = text.split("\n");
-        const headers = lines[0].split(",").map(header => header.trim());
-        
-        // Parse the rows
-        const rows = lines.slice(1)
-          .filter(line => line.trim() !== "")
-          .map(line => line.split(",").map(cell => cell.trim()));
-
-        setCsvData({
-          headers,
-          rows: [...rows],
-          originalRows: [...rows]
-        });
-        
-        setUploadStage("uploaded");
-        setSelectedColumns(headers);
-        toast({
-          title: "File Uploaded Successfully",
-          description: `${file.name} has been processed. ${rows.length} rows and ${headers.length} columns found.`
-        });
-      } catch (error) {
-        console.error("Error parsing CSV:", error);
-        toast({
-          title: "Error Parsing File",
-          description: "There was an error processing your CSV file. Please check the format and try again.",
-          variant: "destructive"
-        });
-        setUploadStage("initial");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    reader.onerror = () => {
-      toast({
-        title: "Error Reading File",
-        description: "There was an error reading your file. Please try again.",
-        variant: "destructive"
-      });
-      setLoading(false);
-      setUploadStage("initial");
-    };
-
-    reader.readAsText(file);
+  const toggleTheme = () => {
+    const newTheme = isDarkTheme ? "light" : "dark";
+    setIsDarkTheme(!isDarkTheme);
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
   };
 
-  // Apply filters to the data
-  const applyFilters = () => {
-    if (!csvData) return;
-
-    let filteredRows = [...csvData.originalRows];
-
-    // Filter by column value
-    if (filterColumn && filterValue) {
-      const columnIndex = csvData.headers.indexOf(filterColumn);
-      filteredRows = filteredRows.filter(row => 
-        row[columnIndex]?.toLowerCase().includes(filterValue.toLowerCase())
-      );
-    }
-
-    // Filter out null/empty values
-    if (excludeNull) {
-      filteredRows = filteredRows.filter(row => !row.some(cell => cell === "" || cell === "null" || cell === "undefined"));
-    }
-
-    // Apply column selection
-    if (selectedColumns.length < csvData.headers.length) {
-      const selectedIndices = selectedColumns.map(col => csvData.headers.indexOf(col));
-      filteredRows = filteredRows.map(row => 
-        selectedIndices.map(index => row[index])
-      );
-
-      setCsvData({
-        headers: selectedColumns,
-        rows: filteredRows,
-        originalRows: csvData.originalRows
-      });
-    } else {
-      setCsvData({
-        ...csvData,
-        rows: filteredRows
-      });
-    }
-
+  // Added functionality for various components
+  const handleFileUpload = () => {
     toast({
-      title: "Filters Applied",
-      description: `Showing ${filteredRows.length} of ${csvData.originalRows.length} rows after filtering.`
+      title: "File uploaded",
+      description: "Your data file has been uploaded successfully",
+      action: <ToastAction altText="Close">Close</ToastAction>,
     });
   };
 
-  // Reset filters
-  const resetFilters = () => {
-    if (!csvData) return;
-    
-    setCsvData({
-      headers: csvData.headers,
-      rows: [...csvData.originalRows],
-      originalRows: csvData.originalRows
-    });
-    
-    setFilterColumn(null);
-    setFilterValue("");
-    setExcludeNull(false);
-    setSelectedColumns(csvData.headers);
-    
+  const handleDelete = () => {
     toast({
-      title: "Filters Reset",
-      description: "All filters have been cleared and data has been reset to its original state."
-    });
-  };
-
-  // Toggle column selection
-  const toggleColumnSelection = (column: string) => {
-    if (selectedColumns.includes(column)) {
-      // Don't allow deselecting the last column
-      if (selectedColumns.length === 1) return;
-      setSelectedColumns(selectedColumns.filter(col => col !== column));
-    } else {
-      setSelectedColumns([...selectedColumns, column]);
-    }
-  };
-
-  // Download processed data
-  const downloadProcessedData = () => {
-    if (!csvData) return;
-    
-    // Create CSV content
-    const csvContent = [
-      csvData.headers.join(','),
-      ...csvData.rows.map(row => row.join(','))
-    ].join('\n');
-    
-    // Create download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'processed_data.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast({
-      title: "Download Started",
-      description: "Your processed data is being downloaded as processed_data.csv"
+      title: "Item deleted",
+      description: "The selected item has been removed",
+      variant: "destructive",
     });
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen pt-20 px-4">
       <Navbar />
-
-      <main className="flex-grow pt-20">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-5xl mx-auto">
-            <h1 className="mb-2">Data Analytics</h1>
-            <p className="text-muted-foreground mb-8">
-              Upload your CSV data for analysis, visualization, and processing
-            </p>
-
-            {uploadStage === "initial" && (
-              <Card className="mb-8">
-                <CardContent className="pt-6">
-                  <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-muted rounded-lg">
-                    <Upload className="w-12 h-12 text-muted-foreground mb-4" />
-                    <h2 className="text-xl font-medium mb-2">Upload Your CSV Data</h2>
-                    <p className="text-muted-foreground text-center mb-6 max-w-md">
-                      Upload your CSV file to analyze, visualize, and process your data. 
-                      You can filter, clean, and transform your data before analysis.
-                    </p>
-                    <Input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".csv"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                    />
-                    <Button 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center gap-2"
-                    >
-                      <Upload className="w-4 h-4" />
-                      Select CSV File
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {uploadStage === "processing" && (
-              <Card className="mb-8">
-                <CardContent className="pt-6">
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <RefreshCw className="w-12 h-12 text-primary mb-4 animate-spin" />
-                    <h2 className="text-xl font-medium mb-2">Processing Your Data</h2>
-                    <p className="text-muted-foreground text-center">
-                      Please wait while we process your CSV file...
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {uploadStage === "uploaded" && csvData && (
-              <>
-                <div className="flex flex-col md:flex-row gap-6 mb-8">
-                  <div className="w-full md:w-3/4">
-                    <Card>
-                      <CardContent className="p-0">
-                        <Tabs defaultValue="table" className="w-full" onValueChange={setActiveView}>
-                          <div className="flex items-center justify-between border-b border-border p-4">
-                            <TabsList>
-                              <TabsTrigger value="table" className="flex items-center gap-1">
-                                <TableIcon className="w-4 h-4" />
-                                Table View
-                              </TabsTrigger>
-                              <TabsTrigger value="chart" className="flex items-center gap-1">
-                                <BarChart2 className="w-4 h-4" />
-                                Chart View
-                              </TabsTrigger>
-                            </TabsList>
-                            
-                            <div className="flex items-center gap-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={downloadProcessedData}
-                                className="flex items-center gap-1.5"
-                              >
-                                <Download className="w-3.5 h-3.5" />
-                                Export
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => {
-                                  setUploadStage("initial");
-                                  setCsvData(null);
-                                  if (fileInputRef.current) {
-                                    fileInputRef.current.value = "";
-                                  }
-                                }}
-                                className="flex items-center gap-1.5"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                                Clear
-                              </Button>
-                            </div>
-                          </div>
-                          
-                          <TabsContent value="table" className="m-0">
-                            <div className="overflow-auto max-h-[60vh]">
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    {csvData.headers.map((header, index) => (
-                                      <TableHead key={index} className="font-semibold">
-                                        {header}
-                                      </TableHead>
-                                    ))}
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {csvData.rows.slice(0, 100).map((row, rowIndex) => (
-                                    <TableRow key={rowIndex}>
-                                      {row.map((cell, cellIndex) => (
-                                        <TableCell key={cellIndex}>
-                                          {cell || <span className="text-muted-foreground italic">null</span>}
-                                        </TableCell>
-                                      ))}
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </div>
-                            {csvData.rows.length > 100 && (
-                              <div className="p-3 text-xs text-center text-muted-foreground border-t border-border">
-                                Showing 100 of {csvData.rows.length} rows
-                              </div>
-                            )}
-                          </TabsContent>
-                          
-                          <TabsContent value="chart" className="m-0">
-                            <div className="flex flex-col items-center justify-center p-12 min-h-[400px]">
-                              {csvData.rows.length > 0 ? (
-                                <div className="text-center">
-                                  <BarChart2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                                  <h3 className="text-lg font-medium mb-2">Chart Visualization</h3>
-                                  <p className="text-muted-foreground mb-4">
-                                    Select columns in the side panel to visualize your data
-                                  </p>
-                                  <Button>Create Visualization</Button>
-                                </div>
-                              ) : (
-                                <div className="text-center">
-                                  <p className="text-muted-foreground">No data available for visualization</p>
-                                </div>
-                              )}
-                            </div>
-                          </TabsContent>
-                        </Tabs>
-                      </CardContent>
-                    </Card>
-                    
-                    <div className="flex items-center justify-between mt-2 text-sm text-muted-foreground">
-                      <div>
-                        {csvData.rows.length} rows × {csvData.headers.length} columns
-                      </div>
-                      <div>
-                        {csvData.rows.length !== csvData.originalRows.length && (
-                          <span className="text-primary">
-                            Filtered: {csvData.rows.length} of {csvData.originalRows.length} rows
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="w-full md:w-1/4">
-                    <Card className="mb-4">
-                      <CardContent className="p-4">
-                        <h3 className="text-sm font-medium mb-3 flex items-center">
-                          <Filter className="w-4 h-4 mr-1.5" /> 
-                          Data Filters
-                        </h3>
-                        
-                        <div className="space-y-4">
-                          <div>
-                            <label className="text-xs mb-1.5 block text-muted-foreground">
-                              Filter by Column
-                            </label>
-                            <select 
-                              className="w-full rounded-md border border-input px-3 py-1.5 text-sm"
-                              value={filterColumn || ""}
-                              onChange={(e) => setFilterColumn(e.target.value || null)}
-                            >
-                              <option value="">Select column</option>
-                              {csvData.headers.map((header, index) => (
-                                <option key={index} value={header}>{header}</option>
-                              ))}
-                            </select>
-                          </div>
-                          
-                          {filterColumn && (
-                            <div>
-                              <label className="text-xs mb-1.5 block text-muted-foreground">
-                                Filter Value
-                              </label>
-                              <div className="relative">
-                                <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                  placeholder="Enter filter value"
-                                  className="pl-8"
-                                  value={filterValue}
-                                  onChange={(e) => setFilterValue(e.target.value)}
-                                />
-                              </div>
-                            </div>
-                          )}
-                          
-                          <div className="flex items-start space-x-2">
-                            <Checkbox 
-                              id="exclude-null" 
-                              checked={excludeNull}
-                              onCheckedChange={(checked) => setExcludeNull(checked === true)}
-                            />
-                            <label 
-                              htmlFor="exclude-null" 
-                              className="text-sm leading-tight cursor-pointer"
-                            >
-                              Exclude null/empty values
-                            </label>
-                          </div>
-                          
-                          <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
-                              className="w-full"
-                              onClick={applyFilters}
-                            >
-                              Apply Filters
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="w-full"
-                              onClick={resetFilters}
-                            >
-                              Reset
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardContent className="p-4">
-                        <h3 className="text-sm font-medium mb-3 flex items-center">
-                          <AlignLeft className="w-4 h-4 mr-1.5" /> 
-                          Column Selection
-                        </h3>
-                        
-                        <div className="max-h-[300px] overflow-y-auto pr-1">
-                          {csvData.headers.map((header, index) => (
-                            <div key={index} className="flex items-center space-x-2 py-1.5">
-                              <Checkbox 
-                                id={`column-${index}`} 
-                                checked={selectedColumns.includes(header)}
-                                onCheckedChange={() => toggleColumnSelection(header)}
-                                disabled={selectedColumns.length === 1 && selectedColumns.includes(header)}
-                              />
-                              <label 
-                                htmlFor={`column-${index}`} 
-                                className="text-sm leading-none cursor-pointer truncate"
-                              >
-                                {header}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                        
-                        <Button 
-                          size="sm" 
-                          className="w-full mt-3"
-                          onClick={applyFilters}
-                        >
-                          Apply Column Selection
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              </>
-            )}
+      <div className="container mx-auto py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+          <div className="flex gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Lightbulb className="h-6 w-6" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Analytics insights</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <ModeToggle />
           </div>
         </div>
-      </main>
 
+        {/* Control Bar */}
+        <div className="flex flex-wrap gap-4 mb-8">
+          <Drawer>
+            <DrawerTrigger asChild>
+              <Button variant="outline">
+                <Filter className="mr-2 h-4 w-4" />
+                Advanced Filters
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Advanced Filters</DrawerTitle>
+                <DrawerDescription>Apply custom filters to your data</DrawerDescription>
+              </DrawerHeader>
+              <div className="p-4 grid gap-4">
+                <div>
+                  <Label>Date Range</Label>
+                  <DatePicker selected={date} onSelect={setDate} />
+                </div>
+                <div>
+                  <Label>Data Types</Label>
+                  <Checkbox
+                    checked={checkedItems.includes("sales")}
+                    onCheckedChange={(checked) =>
+                      setCheckedItems(prev =>
+                        checked ? [...prev, "sales"] : prev.filter(item => item !== "sales")
+                      )
+                    }
+                  />
+                  <Label className="ml-2">Sales Data</Label>
+                </div>
+                <Slider value={sliderValue} onValueChange={setSliderValue} />
+              </div>
+              <DrawerFooter>
+                <DrawerClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Clear Data
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete your data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                View Options
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Chart Types</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuCheckboxItem checked>
+                <BarChart2 className="mr-2 h-4 w-4" />
+                Bar Chart
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem>
+                <ScatterChart className="mr-2 h-4 w-4" />
+                Scatter Plot
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Data Section */}
+        <ResizablePanelGroup direction="horizontal" className="min-h-[500px]">
+          <ResizablePanel defaultSize={70}>
+            <div className="pr-4">
+              <section className="mb-8">
+                <h2 className="text-2xl font-semibold mb-4">Key Metrics</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { title: "Total Users", value: "1,234", icon: <GitBranch className="h-6 w-6" /> },
+                    { title: "Revenue", value: "$4,567", icon: <Calculator className="h-6 w-6" /> },
+                    { title: "Active Sessions", value: "876", icon: <Activity className="h-6 w-6" /> },
+                    { title: "Conversion Rate", value: "12.4%", icon: <Sigma className="h-6 w-6" /> }
+                  ].map((metric, index) => (
+                    <Card key={index}>
+                      <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                          <CardTitle>{metric.title}</CardTitle>
+                          <CardDescription>Last 30 days</CardDescription>
+                        </div>
+                        {metric.icon}
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold">{metric.value}</div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+
+              <section className="mb-8">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-semibold">User Analytics</h2>
+                  <div className="flex gap-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          Select Date
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <CalendarComponent
+                          mode="single"
+                          selected={date}
+                          onSelect={setDate}
+                          className="rounded-md"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <Button variant="outline" onClick={handleFileUpload}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Import
+                    </Button>
+                  </div>
+                </div>
+
+                <ResizablePanelGroup direction="horizontal">
+                  <ResizablePanel defaultSize={60}>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>User Engagement</CardTitle>
+                        <div className="flex gap-2 mt-2">
+                          <RadioGroup value={selectedRadio} onValueChange={setSelectedRadio}>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="option1" id="option1" />
+                              <Label htmlFor="option1">Daily</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="option2" id="option2" />
+                              <Label htmlFor="option2">Weekly</Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <LineChart className="h-64 w-full" />
+                      </CardContent>
+                    </Card>
+                  </ResizablePanel>
+                  <ResizableHandle />
+                  <ResizablePanel defaultSize={40}>
+                    <Card className="ml-4">
+                      <CardHeader>
+                        <CardTitle>Data Summary</CardTitle>
+                        <CardDescription>Key statistics overview</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex items-center">
+                            <Box className="mr-2 h-4 w-4" />
+                            <span>Total Storage Used: 256GB</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Network className="mr-2 h-4 w-4" />
+                            <span>Active Connections: 42</span>
+                          </div>
+                          <Progress value={45} className="h-2" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </ResizablePanel>
+                </ResizablePanelGroup>
+              </section>
+            </div>
+          </ResizablePanel>
+          <ResizableHandle />
+          <ResizablePanel defaultSize={30}>
+            <div className="pl-4">
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle>Data Explorer</CardTitle>
+                  <CardDescription>Interactive data table</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[400px]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Value</TableHead>
+                          <TableHead>Trend</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {Array.from({ length: 20 }).map((_, index) => (
+                          <TableRow key={index}>
+                            <TableCell>Category {index + 1}</TableCell>
+                            <TableCell>{(Math.random() * 1000).toFixed(2)}</TableCell>
+                            <TableCell>
+                              <TrendingUp className="h-4 w-4 text-green-500" />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    <ScrollBar orientation="vertical" />
+                  </ScrollArea>
+
+                  <Pagination className="mt-4">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious href="#" />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationLink href="#">1</PaginationLink>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationNext href="#" />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </CardContent>
+              </Card>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+
+        {/* Additional Components Section */}
+        <section className="mt-8">
+          <Accordion type="single" collapsible>
+            <AccordionItem value="item-1">
+              <AccordionTrigger>
+                <div className="flex items-center">
+                  <ClipboardList className="mr-2 h-4 w-4" />
+                  Advanced Settings
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <Label>Visualization Options</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select chart type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="bar">
+                          <BarChart className="mr-2 h-4 w-4" />
+                          Bar Chart
+                        </SelectItem>
+                        <SelectItem value="line">
+                          <LineChart className="mr-2 h-4 w-4" />
+                          Line Chart
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="flex items-center space-x-2">
+                      <Switch id="data-labels" />
+                      <Label htmlFor="data-labels">Show Data Labels</Label>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <Label>Additional Tools</Label>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
+                        <MapPin className="mr-2 h-4 w-4" />
+                        Geospatial
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Radar className="mr-2 h-4 w-4" />
+                        Radar Scan
+                      </Button>
+                    </div>
+                    <Textarea placeholder="Enter custom analysis query..." />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </section>
+      </div>
       <Footer />
     </div>
   );

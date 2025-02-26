@@ -1,0 +1,107 @@
+# Node.js dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Testing coverage
+/coverage
+
+# Production build files
+/build
+
+# Miscellaneous system files
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE/Editor configurations
+.idea/
+.idea/workspace.xml
+*.iml
+*.xml
+
+# React-specific files
+src/app/src/*.test.js  # Skip tests unless you want to include them in version control
+src/app/public/favicon.ico  # If favicon.ico is customizable, ignore it if unnecessary
+src/app/public/manifest.json  # Ignore manifest if not required in your deployment
+src/app/public/robots.txt  # Ignore robots.txt if auto-generated
+
+# Others
+*.log
+
+# Ignore Python compiled files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.cpython-311-*.so
+
+# Ignore Google Cloud SDK related files
+gcloud/
+gcloud-*
+.gcloudignore
+.gcloud/
+.cloudignore
+.cloud/
+.cloud-*
+
+# Ignore Google Cloud Deployment Configs
+*.yaml
+*.json
+*.cfg
+*.manifest
+*.snapshot
+*.crc32c.manifest
+*.cpython-311-*
+gcloud-*.so
+gcloud-*.pyc
+
+# Ignore Google Cloud Build Logs and Artifacts
+build/
+dist/
+node_modules/
+firebase-debug.log
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+pnpm-lock.yaml
+
+# Ignore Google Cloud Storage and Service Accounts
+google-cloud-sdk/
+gcloud-init/
+gcloud-deploy/
+credentials.json
+service-account.json
+
+# Ignore Terraform (if used for infrastructure)
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+
+# Ignore Google Cloud Functions (if applicable)
+functions/node_modules/
+functions/.firebase/
+functions/.runtimeconfig.json
+functions/lib/
+functions/dist/
+
+# Ignore Google Cloud Run and Docker
+Dockerfile
+.dockerignore
+*.tar.gz
+*.csv
+

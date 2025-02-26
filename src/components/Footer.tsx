@@ -12,7 +12,7 @@ const Footer = () => {
               <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
                 <Database className="w-4 h-4 text-primary-foreground" />
               </div>
-              <span className="font-medium text-xl">DataSynth</span>
+              <span className="font-medium text-xl">ReplicaDB</span>
             </Link>
             <p className="text-muted-foreground text-sm">
               Discover, synthesize, and analyze data with our all-in-one platform.
