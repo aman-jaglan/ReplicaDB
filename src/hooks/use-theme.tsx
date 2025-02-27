@@ -18,6 +18,7 @@ const initialState: ThemeProviderState = {
   setTheme: () => null,
 }
 
+// Create the context with proper typing
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
 export function ThemeProvider({
@@ -32,11 +33,11 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement
+
     root.classList.remove("light", "dark")
 
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
         : "light"
 
@@ -47,7 +48,8 @@ export function ThemeProvider({
     root.classList.add(theme)
   }, [theme])
 
-  const value = {
+  // Use let instead of const since we're updating the value
+  let value = {
     theme,
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme)

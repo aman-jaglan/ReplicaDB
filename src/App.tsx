@@ -1,14 +1,18 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/components/AuthProvider";
+import RequireAuth from "@/components/RequireAuth";
 import Index from "./pages/Index";
 import Discovery from "./pages/Discovery";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import Blog from "./pages/Blog";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 
 // Placeholder pages (to be implemented)
 const Synthesizer = () => (
@@ -26,21 +30,31 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/discovery" element={<Discovery />} />
-          <Route path="/synthesizer" element={<Synthesizer />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/blog" element={<Blog />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider defaultTheme="light">
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/signup" element={<SignUp />} />
+
+              {/* Protected routes */}
+              <Route path="/discovery" element={<RequireAuth><Discovery /></RequireAuth>} />
+              <Route path="/synthesizer" element={<RequireAuth><Synthesizer /></RequireAuth>} />
+              <Route path="/analytics" element={<RequireAuth><Analytics /></RequireAuth>} />
+              <Route path="/blog" element={<RequireAuth><Blog /></RequireAuth>} />
+              
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

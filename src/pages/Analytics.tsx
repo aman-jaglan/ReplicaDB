@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Upload,
   FileText,
@@ -45,487 +45,314 @@ import {
   Boxes,
   Calendar
 } from "lucide-react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
-import { ToastAction } from "@/components/ui/toast";
-import { InputPopover } from "@/components/input-popover";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
-import { useTheme } from "@/hooks/use-theme";
-import { ModeToggle } from "@/components/mode-toggle";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useSearchParams } from "react-router-dom";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-import { DatePicker } from "@/components/date-picker"
-import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/date-picker";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import FileUploadZone from "@/components/FileUploadZone";
+import DataPreview from "@/components/DataPreview";
+import AnalyticsChart from "@/components/AnalyticsChart";
+import DataCleaner from "@/components/DataCleaner";
+import DashboardBuilder from "@/components/DashboardBuilder";
+
+interface DataRow {
+  [key: string]: string | number;
+}
 
 const Analytics = () => {
-  const searchParams = useSearchParams();
+  const [activeStep, setActiveStep] = useState<'upload' | 'clean' | 'visualize' | 'dashboard'>('upload');
+  const [uploadedData, setUploadedData] = useState<DataRow[]>([]);
+  const [cleanedData, setCleanedData] = useState<DataRow[]>([]);
+  const [metrics, setMetrics] = useState<Array<{
+    title: string;
+    value: string;
+    icon: React.ReactNode;
+  }>>([]);
   const { toast } = useToast();
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
-  const { setTheme } = useTheme();
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [inputValue, setInputValue] = useState("");
-  const [sliderValue, setSliderValue] = useState([50]);
-  const [selectedRadio, setSelectedRadio] = useState("option1");
-  const [checkedItems, setCheckedItems] = useState<string[]>([]);
 
-  useEffect(() => {
-    const storedTheme = localStorage.getItem("theme");
-    setIsDarkTheme(storedTheme === "dark");
-  }, []);
+  const calculateMetrics = (data: DataRow[]) => {
+    if (!data.length) return [];
 
-  const toggleTheme = () => {
-    const newTheme = isDarkTheme ? "light" : "dark";
-    setIsDarkTheme(!isDarkTheme);
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-  };
+    const numericColumns = Object.keys(data[0]).filter(key =>
+      typeof data[0][key] === 'number'
+    );
 
-  // Added functionality for various components
-  const handleFileUpload = () => {
-    toast({
-      title: "File uploaded",
-      description: "Your data file has been uploaded successfully",
-      action: <ToastAction altText="Close">Close</ToastAction>,
+    return numericColumns.slice(0, 4).map(column => {
+      const values = data.map(row => Number(row[column]));
+      const sum = values.reduce((a, b) => a + b, 0);
+      const avg = sum / values.length;
+
+      return {
+        title: column,
+        value: avg.toLocaleString(undefined, { maximumFractionDigits: 2 }),
+        icon: <Calculator className="h-6 w-6" />
+      };
     });
   };
 
-  const handleDelete = () => {
+  const handleDataUpload = (data: DataRow[]) => {
+    setUploadedData(data);
+    setCleanedData(data);
+    const newMetrics = calculateMetrics(data);
+    setMetrics(newMetrics);
+
     toast({
-      title: "Item deleted",
-      description: "The selected item has been removed",
+      title: "Data Uploaded",
+      description: `Successfully loaded ${data.length} rows of data`,
+    });
+
+    setActiveStep('clean');
+  };
+
+  const handleDataCleaned = (data: DataRow[]) => {
+    setCleanedData(data);
+    const newMetrics = calculateMetrics(data);
+    setMetrics(newMetrics);
+
+    toast({
+      title: "Data Cleaned",
+      description: `${data.length} rows of clean data ready for analysis`,
+    });
+
+    setActiveStep('visualize');
+  };
+
+  const handleDelete = () => {
+    setUploadedData([]);
+    setCleanedData([]);
+    setMetrics([]);
+    setActiveStep('upload');
+
+    toast({
+      title: "Data Cleared",
+      description: "All data has been removed",
       variant: "destructive",
     });
   };
 
   return (
-    <div className="min-h-screen pt-20 px-4">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="container mx-auto py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-          <div className="flex gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <Lightbulb className="h-6 w-6" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Analytics insights</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <ModeToggle />
+
+      <main className="flex-grow pt-20 px-4 py-8">
+        <div className="container mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+              <p className="text-muted-foreground">Analyze and visualize your data</p>
+            </div>
+            <div className="flex gap-2">
+              {uploadedData.length > 0 && (
+                <Button variant="destructive" onClick={handleDelete}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Clear Data
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Control Bar */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          <Drawer>
-            <DrawerTrigger asChild>
-              <Button variant="outline">
-                <Filter className="mr-2 h-4 w-4" />
-                Advanced Filters
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent>
-              <DrawerHeader>
-                <DrawerTitle>Advanced Filters</DrawerTitle>
-                <DrawerDescription>Apply custom filters to your data</DrawerDescription>
-              </DrawerHeader>
-              <div className="p-4 grid gap-4">
-                <div>
-                  <Label>Date Range</Label>
-                  <DatePicker selected={date} onSelect={setDate} />
+          {/* Progress Steps */}
+          {uploadedData.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between max-w-3xl mx-auto">
+                <div
+                  className={`flex flex-col items-center cursor-pointer ${activeStep === 'upload' ? 'text-primary' : 'text-muted-foreground'}`}
+                  onClick={() => uploadedData.length > 0 && setActiveStep('upload')}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activeStep === 'upload' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                    <Upload className="h-5 w-5" />
+                  </div>
+                  <span className="mt-2 text-sm font-medium">Upload</span>
                 </div>
-                <div>
-                  <Label>Data Types</Label>
-                  <Checkbox
-                    checked={checkedItems.includes("sales")}
-                    onCheckedChange={(checked) =>
-                      setCheckedItems(prev =>
-                        checked ? [...prev, "sales"] : prev.filter(item => item !== "sales")
-                      )
-                    }
-                  />
-                  <Label className="ml-2">Sales Data</Label>
+
+                <div className={`w-24 h-1 ${activeStep === 'upload' ? 'bg-muted' : 'bg-primary'}`} />
+
+                <div
+                  className={`flex flex-col items-center cursor-pointer ${activeStep === 'clean' ? 'text-primary' : activeStep === 'upload' ? 'text-muted-foreground' : 'text-muted-foreground'}`}
+                  onClick={() => uploadedData.length > 0 && setActiveStep('clean')}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activeStep === 'clean' ? 'bg-primary text-primary-foreground' : activeStep === 'upload' ? 'bg-muted' : 'bg-primary/30'}`}>
+                    <Filter className="h-5 w-5" />
+                  </div>
+                  <span className="mt-2 text-sm font-medium">Clean</span>
                 </div>
-                <Slider value={sliderValue} onValueChange={setSliderValue} />
+
+                <div className={`w-24 h-1 ${activeStep === 'upload' || activeStep === 'clean' ? 'bg-muted' : 'bg-primary'}`} />
+
+                <div
+                  className={`flex flex-col items-center cursor-pointer ${activeStep === 'visualize' ? 'text-primary' : activeStep === 'dashboard' ? 'text-muted-foreground' : 'text-muted-foreground'}`}
+                  onClick={() => cleanedData.length > 0 && setActiveStep('visualize')}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activeStep === 'visualize' ? 'bg-primary text-primary-foreground' : activeStep === 'dashboard' ? 'bg-primary/30' : 'bg-muted'}`}>
+                    <BarChart2 className="h-5 w-5" />
+                  </div>
+                  <span className="mt-2 text-sm font-medium">Visualize</span>
+                </div>
+
+                <div className={`w-24 h-1 ${activeStep === 'dashboard' ? 'bg-primary' : 'bg-muted'}`} />
+
+                <div
+                  className={`flex flex-col items-center cursor-pointer ${activeStep === 'dashboard' ? 'text-primary' : 'text-muted-foreground'}`}
+                  onClick={() => cleanedData.length > 0 && setActiveStep('dashboard')}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activeStep === 'dashboard' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                    <LayoutDashboard className="h-5 w-5" />
+                  </div>
+                  <span className="mt-2 text-sm font-medium">Dashboard</span>
+                </div>
               </div>
-              <DrawerFooter>
-                <DrawerClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </DrawerClose>
-              </DrawerFooter>
-            </DrawerContent>
-          </Drawer>
+            </div>
+          )}
 
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Clear Data
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete your data.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          {/* Upload Step */}
+          {activeStep === 'upload' && (
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>Data Upload</CardTitle>
+                <CardDescription>Upload your CSV file for analysis</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FileUploadZone onFileAccepted={handleDataUpload} />
+              </CardContent>
+            </Card>
+          )}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                View Options
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Chart Types</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem checked>
-                <BarChart2 className="mr-2 h-4 w-4" />
-                Bar Chart
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem>
-                <ScatterChart className="mr-2 h-4 w-4" />
-                Scatter Plot
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+          {/* Clean Step */}
+          {activeStep === 'clean' && uploadedData.length > 0 && (
+            <div className="space-y-8">
+              {/* Key Metrics */}
+              {metrics.length > 0 && (
+                <section>
+                  <h2 className="text-xl font-semibold mb-4">Key Metrics</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {metrics.map((metric, index) => (
+                      <Card key={index}>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                          <div>
+                            <CardTitle>{metric.title}</CardTitle>
+                            <CardDescription>Average</CardDescription>
+                          </div>
+                          {metric.icon}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-3xl font-bold">{metric.value}</div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </section>
+              )}
 
-        {/* Data Section */}
-        <ResizablePanelGroup direction="horizontal" className="min-h-[500px]">
-          <ResizablePanel defaultSize={70}>
-            <div className="pr-4">
-              <section className="mb-8">
-                <h2 className="text-2xl font-semibold mb-4">Key Metrics</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[
-                    { title: "Total Users", value: "1,234", icon: <GitBranch className="h-6 w-6" /> },
-                    { title: "Revenue", value: "$4,567", icon: <Calculator className="h-6 w-6" /> },
-                    { title: "Active Sessions", value: "876", icon: <Activity className="h-6 w-6" /> },
-                    { title: "Conversion Rate", value: "12.4%", icon: <Sigma className="h-6 w-6" /> }
-                  ].map((metric, index) => (
-                    <Card key={index}>
-                      <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
-                          <CardTitle>{metric.title}</CardTitle>
-                          <CardDescription>Last 30 days</CardDescription>
-                        </div>
-                        {metric.icon}
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-3xl font-bold">{metric.value}</div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+              {/* Data Preview */}
+              <section>
+                <h2 className="text-xl font-semibold mb-4">Data Preview</h2>
+                <DataPreview data={uploadedData} />
               </section>
 
-              <section className="mb-8">
+              {/* Data Cleaner */}
+              <DataCleaner data={uploadedData} onDataCleaned={handleDataCleaned} />
+            </div>
+          )}
+
+          {/* Visualize Step */}
+          {activeStep === 'visualize' && cleanedData.length > 0 && (
+            <div className="space-y-8">
+              {/* Key Metrics */}
+              {metrics.length > 0 && (
+                <section>
+                  <h2 className="text-xl font-semibold mb-4">Key Metrics</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {metrics.map((metric, index) => (
+                      <Card key={index}>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                          <div>
+                            <CardTitle>{metric.title}</CardTitle>
+                            <CardDescription>Average</CardDescription>
+                          </div>
+                          {metric.icon}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-3xl font-bold">{metric.value}</div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Data Preview */}
+              <section>
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-semibold">User Analytics</h2>
-                  <div className="flex gap-2">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline">
-                          <Calendar className="mr-2 h-4 w-4" />
-                          Select Date
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <CalendarComponent
-                          mode="single"
-                          selected={date}
-                          onSelect={setDate}
-                          className="rounded-md"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <Button variant="outline" onClick={handleFileUpload}>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Import
-                    </Button>
-                  </div>
+                  <h2 className="text-xl font-semibold">Cleaned Data</h2>
+                  <Button onClick={() => setActiveStep('dashboard')}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Create Dashboard
+                  </Button>
                 </div>
+                <DataPreview data={cleanedData} />
+              </section>
 
-                <ResizablePanelGroup direction="horizontal">
-                  <ResizablePanel defaultSize={60}>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>User Engagement</CardTitle>
-                        <div className="flex gap-2 mt-2">
-                          <RadioGroup value={selectedRadio} onValueChange={setSelectedRadio}>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="option1" id="option1" />
-                              <Label htmlFor="option1">Daily</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="option2" id="option2" />
-                              <Label htmlFor="option2">Weekly</Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <LineChart className="h-64 w-full" />
-                      </CardContent>
-                    </Card>
-                  </ResizablePanel>
-                  <ResizableHandle />
-                  <ResizablePanel defaultSize={40}>
-                    <Card className="ml-4">
-                      <CardHeader>
-                        <CardTitle>Data Summary</CardTitle>
-                        <CardDescription>Key statistics overview</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="flex items-center">
-                            <Box className="mr-2 h-4 w-4" />
-                            <span>Total Storage Used: 256GB</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Network className="mr-2 h-4 w-4" />
-                            <span>Active Connections: 42</span>
-                          </div>
-                          <Progress value={45} className="h-2" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </ResizablePanel>
-                </ResizablePanelGroup>
+              {/* Charts */}
+              <section>
+                <h2 className="text-xl font-semibold mb-4">Visualizations</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <AnalyticsChart
+                    type="bar"
+                    title="Bar Chart"
+                    xAxis={Object.keys(cleanedData[0])[0]}
+                    yAxis={Object.keys(cleanedData[0]).find(key => typeof cleanedData[0][key] === 'number') || Object.keys(cleanedData[0])[1]}
+                    data={cleanedData}
+                  />
+                  <AnalyticsChart
+                    type="line"
+                    title="Line Chart"
+                    xAxis={Object.keys(cleanedData[0])[0]}
+                    yAxis={Object.keys(cleanedData[0]).find(key => typeof cleanedData[0][key] === 'number') || Object.keys(cleanedData[0])[1]}
+                    data={cleanedData}
+                  />
+                  <AnalyticsChart
+                    type="pie"
+                    title="Pie Chart"
+                    xAxis={Object.keys(cleanedData[0])[0]}
+                    yAxis={Object.keys(cleanedData[0]).find(key => typeof cleanedData[0][key] === 'number') || Object.keys(cleanedData[0])[1]}
+                    data={cleanedData}
+                  />
+                  <AnalyticsChart
+                    type="area"
+                    title="Area Chart"
+                    xAxis={Object.keys(cleanedData[0])[0]}
+                    yAxis={Object.keys(cleanedData[0]).find(key => typeof cleanedData[0][key] === 'number') || Object.keys(cleanedData[0])[1]}
+                    data={cleanedData}
+                  />
+                </div>
               </section>
             </div>
-          </ResizablePanel>
-          <ResizableHandle />
-          <ResizablePanel defaultSize={30}>
-            <div className="pl-4">
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle>Data Explorer</CardTitle>
-                  <CardDescription>Interactive data table</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-[400px]">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Category</TableHead>
-                          <TableHead>Value</TableHead>
-                          <TableHead>Trend</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {Array.from({ length: 20 }).map((_, index) => (
-                          <TableRow key={index}>
-                            <TableCell>Category {index + 1}</TableCell>
-                            <TableCell>{(Math.random() * 1000).toFixed(2)}</TableCell>
-                            <TableCell>
-                              <TrendingUp className="h-4 w-4 text-green-500" />
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                    <ScrollBar orientation="vertical" />
-                  </ScrollArea>
+          )}
 
-                  <Pagination className="mt-4">
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious href="#" />
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationLink href="#">1</PaginationLink>
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationNext href="#" />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </CardContent>
-              </Card>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          {/* Dashboard Step */}
+          {activeStep === 'dashboard' && cleanedData.length > 0 && (
+            <DashboardBuilder data={cleanedData} />
+          )}
+        </div>
+      </main>
 
-        {/* Additional Components Section */}
-        <section className="mt-8">
-          <Accordion type="single" collapsible>
-            <AccordionItem value="item-1">
-              <AccordionTrigger>
-                <div className="flex items-center">
-                  <ClipboardList className="mr-2 h-4 w-4" />
-                  Advanced Settings
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-4">
-                    <Label>Visualization Options</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select chart type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="bar">
-                          <BarChart className="mr-2 h-4 w-4" />
-                          Bar Chart
-                        </SelectItem>
-                        <SelectItem value="line">
-                          <LineChart className="mr-2 h-4 w-4" />
-                          Line Chart
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <div className="flex items-center space-x-2">
-                      <Switch id="data-labels" />
-                      <Label htmlFor="data-labels">Show Data Labels</Label>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <Label>Additional Tools</Label>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <MapPin className="mr-2 h-4 w-4" />
-                        Geospatial
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Radar className="mr-2 h-4 w-4" />
-                        Radar Scan
-                      </Button>
-                    </div>
-                    <Textarea placeholder="Enter custom analysis query..." />
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </section>
-      </div>
       <Footer />
     </div>
   );

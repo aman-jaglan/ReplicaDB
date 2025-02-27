@@ -1,42 +1,66 @@
-"use client";
+import * as React from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
-import * as React from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+interface InputPopoverProps {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+  buttonVariant?: "link" | "default" | "destructive" | "outline" | "secondary" | "ghost" | null | undefined
+}
 
 export function InputPopover({
-  children,
-  onSubmit,
-}: {
-  children: React.ReactNode;
-  onSubmit: (value: string) => void;
-}) {
-  const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+  label,
+  value,
+  onChange,
+  placeholder,
+  buttonVariant = "outline"
+}: InputPopoverProps) {
+  const [open, setOpen] = React.useState(false)
+  const [inputValue, setInputValue] = React.useState(value)
+
+  React.useEffect(() => {
+    setInputValue(value)
+  }, [value])
+
+  const handleSave = () => {
+    onChange(inputValue)
+    setOpen(false)
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        {children}
+        <Button variant={buttonVariant}>{label}</Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSubmit(value);
-            setOpen(false);
-          }}
-          className="flex gap-2"
-        >
+        <div className="space-y-4">
+          <h4 className="font-medium">{label}</h4>
           <Input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="Enter value..."
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder={placeholder}
           />
-          <Button type="submit">Save</Button>
-        </form>
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setInputValue(value)
+                setOpen(false)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSave}>Save</Button>
+          </div>
+        </div>
       </PopoverContent>
     </Popover>
-  );
+  )
 }

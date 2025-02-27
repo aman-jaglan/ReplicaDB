@@ -1,8 +1,7 @@
-
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BarChart2, Download, Eye, FileText } from "lucide-react";
+import { BarChart2, Download, Eye, FileText, ExternalLink } from "lucide-react";
 
 export interface Dataset {
   id: string;
@@ -14,6 +13,7 @@ export interface Dataset {
   created: string;
   fileSize: string;
   imageUrl?: string;
+  source?: string; // Added to indicate external datasets
 }
 
 interface DataCardProps {
@@ -26,6 +26,7 @@ interface DataCardProps {
 const DataCard = ({ dataset, onView, onDownload, onAnalyze }: DataCardProps) => {
   // Determine if dataset is free or paid
   const isPaid = dataset.tags.some(tag => tag.toLowerCase() === 'paid');
+  const isExternal = !!dataset.source;
 
   return (
     <Card className="overflow-hidden flex flex-col h-full transition-all duration-200 hover:shadow-md">
@@ -60,6 +61,11 @@ const DataCard = ({ dataset, onView, onDownload, onAnalyze }: DataCardProps) => 
               {tag}
             </Badge>
           ))}
+          {isExternal && (
+            <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-600">
+              {dataset.source}
+            </Badge>
+          )}
         </div>
         
         <div className="grid grid-cols-2 gap-4 text-sm">
@@ -89,7 +95,15 @@ const DataCard = ({ dataset, onView, onDownload, onAnalyze }: DataCardProps) => 
           className="flex-1"
           onClick={() => onView(dataset)}
         >
-          <Eye className="w-4 h-4 mr-1" /> View
+          {isExternal ? (
+            <>
+              <ExternalLink className="w-4 h-4 mr-1" /> Source
+            </>
+          ) : (
+            <>
+              <Eye className="w-4 h-4 mr-1" /> View
+            </>
+          )}
         </Button>
         <Button 
           variant={isPaid ? "secondary" : "outline"} 
@@ -103,6 +117,8 @@ const DataCard = ({ dataset, onView, onDownload, onAnalyze }: DataCardProps) => 
           variant="outline" 
           size="icon"
           onClick={() => onAnalyze(dataset)}
+          disabled={isExternal}
+          title={isExternal ? "Analysis not available for external datasets" : "Analyze dataset"}
         >
           <BarChart2 className="w-4 h-4" />
         </Button>

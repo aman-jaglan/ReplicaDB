@@ -1,163 +1,238 @@
-
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMemo, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  BarChart2, 
-  PieChart, 
+  BarChart, 
   LineChart, 
-  ScatterChart, 
-  Activity, 
-  Box, 
-  Grid, 
-  Map, 
-  Network, 
-  Radar, 
-  TrendingUp, 
-  TreeDeciduous, 
-  GitBranch, // Replacing FlowParallel with GitBranch
-  Fingerprint, 
-  Layers, 
-  Binary, 
-  Boxes
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+  PieChart, 
+  AreaChart, 
+  ResponsiveContainer, 
+  XAxis, 
+  YAxis, 
+  Bar, 
+  Line, 
+  Pie, 
+  Area, 
+  Tooltip, 
+  Legend, 
+  Cell,
+  CartesianGrid 
+} from 'recharts';
 
 interface AnalyticsChartProps {
-  type: string;
+  data: never[];
   title: string;
+  type: 'bar' | 'line' | 'pie' | 'area';
   xAxis: string;
   yAxis: string;
-  data?: any[];
-  theme?: 'light' | 'dark';
-  customColors?: string[];
-  className?: string;
+  colors?: string[];
+  height?: number;
 }
 
-const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ 
-  type, 
-  title, 
-  xAxis, 
-  yAxis,
+const defaultColors = [
+  '#3B82F6', // blue-500
+  '#10B981', // emerald-500
+  '#F59E0B', // amber-500
+  '#EF4444', // red-500
+  '#8B5CF6', // violet-500
+  '#EC4899', // pink-500
+  '#06B6D4', // cyan-500
+];
+
+const AnalyticsChart = ({
   data,
-  theme = 'light',
-  customColors,
-  className
-}) => {
-  // Get the appropriate icon based on chart type
-  const getChartIcon = () => {
-    switch (type) {
-      case 'bar':
-      case 'bar-stacked':
-      case 'bar-grouped':
-        return <BarChart2 className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'line':
-        return <LineChart className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'pie':
-      case 'donut':
-        return <PieChart className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'scatter':
-        return <ScatterChart className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'histogram':
-        return <Activity className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'boxplot':
-        return <Box className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'heatmap':
-        return <Grid className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'bubble':
-        return <Boxes className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'violin':
-        return <Activity className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'treemap':
-        return <TreeDeciduous className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'sankey':
-        return <GitBranch className="w-16 h-16 text-muted-foreground mb-2" />; // Using GitBranch instead
-      case 'radar':
-        return <Radar className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'choropleth':
-        return <Map className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'pca':
-        return <Fingerprint className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'regression':
-        return <TrendingUp className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'clustering':
-        return <Layers className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'decision-tree':
-        return <Network className="w-16 h-16 text-muted-foreground mb-2" />;
-      case 'feature-importance':
-        return <Binary className="w-16 h-16 text-muted-foreground mb-2" />;
-      default:
-        return <BarChart2 className="w-16 h-16 text-muted-foreground mb-2" />;
-    }
-  };
+  title,
+  type: initialType,
+  xAxis: initialXAxis,
+  yAxis: initialYAxis,
+  colors = defaultColors,
+  height = 300
+}: AnalyticsChartProps) => {
+  const [chartType, setChartType] = useState<'bar' | 'line' | 'pie' | 'area'>(initialType);
+  const [xAxis, setXAxis] = useState(initialXAxis);
+  const [yAxis, setYAxis] = useState(initialYAxis);
 
-  const getChartTypeLabel = () => {
-    switch (type) {
-      case 'bar': return 'Bar Chart';
-      case 'bar-stacked': return 'Stacked Bar Chart';
-      case 'bar-grouped': return 'Grouped Bar Chart';
-      case 'line': return 'Line Chart';
-      case 'pie': return 'Pie Chart';
-      case 'donut': return 'Donut Chart';
-      case 'scatter': return 'Scatter Plot';
-      case 'histogram': return 'Histogram';
-      case 'boxplot': return 'Box Plot';
-      case 'heatmap': return 'Heatmap';
-      case 'bubble': return 'Bubble Chart';
-      case 'violin': return 'Violin Plot';
-      case 'treemap': return 'Treemap';
-      case 'sankey': return 'Sankey Diagram';
-      case 'radar': return 'Radar Chart';
-      case 'choropleth': return 'Choropleth Map';
-      case 'pca': return 'PCA Visualization';
-      case 'regression': return 'Regression Analysis';
-      case 'clustering': return 'Clustering';
-      case 'decision-tree': return 'Decision Tree';
-      case 'feature-importance': return 'Feature Importance';
-      default: return 'Chart';
-    }
-  };
+  const availableColumns = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    return Object.keys(data[0]);
+  }, [data]);
 
-  // Determine if the chart is an advanced type
-  const isAdvancedChart = ['heatmap', 'bubble', 'violin', 'treemap', 'sankey', 'radar', 'choropleth'].includes(type);
-  
-  // Determine if the chart is an AI-driven visualization
-  const isAIChart = ['pca', 'regression', 'clustering', 'decision-tree', 'feature-importance'].includes(type);
+  const numericColumns = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    return Object.keys(data[0]).filter(key => typeof data[0][key] === 'number');
+  }, [data]);
+
+  const processedData = useMemo(() => {
+    if (!data || data.length === 0) return [];
+
+    // For pie charts, we need to count occurrences
+    if (chartType === 'pie') {
+      const counts: Record<string, number> = {};
+      data.forEach(item => {
+        const value = String(item[xAxis] || 'Unknown');
+        counts[value] = (counts[value] || 0) + 1;
+      });
+      return Object.entries(counts).map(([name, value]) => ({ name, value }));
+    }
+
+    // For bar, line, and area charts
+    return data.map(item => ({
+      [xAxis]: item[xAxis],
+      [yAxis]: item[yAxis],
+    }));
+  }, [data, xAxis, yAxis, chartType]);
+
+  // Handle empty or invalid data
+  if (!data || data.length === 0 || availableColumns.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>No data available for visualization</CardDescription>
+        </CardHeader>
+        <CardContent className="h-[300px] flex items-center justify-center text-muted-foreground">
+          No data to display
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className={`overflow-hidden ${theme === 'dark' ? 'bg-gray-800 text-white' : ''} ${className}`}>
-      <CardHeader className="py-3 px-4">
-        <CardTitle className="text-base flex items-center justify-between">
-          <span>{title}</span>
-          <div className="flex gap-1">
-            {isAdvancedChart && (
-              <Badge variant="secondary" className="text-xs">Advanced</Badge>
-            )}
-            {isAIChart && (
-              <Badge variant="outline" className="text-xs">AI-Driven</Badge>
-            )}
+    <Card>
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+          <div>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>
+              {chartType === 'pie' 
+                ? `Showing distribution of ${xAxis}` 
+                : `${yAxis} by ${xAxis}`}
+            </CardDescription>
           </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0 h-[300px]">
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="flex flex-col items-center justify-center">
-            {getChartIcon()}
-            <p className="text-sm text-muted-foreground">
-              {getChartTypeLabel()} of {yAxis} by {xAxis}
-            </p>
+          <div className="flex flex-wrap gap-2">
+            <Select value={chartType} onValueChange={(value) => setChartType(value as never)}>
+              <SelectTrigger className="w-[110px]">
+                <SelectValue placeholder="Chart type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bar">Bar Chart</SelectItem>
+                <SelectItem value="line">Line Chart</SelectItem>
+                <SelectItem value="area">Area Chart</SelectItem>
+                <SelectItem value="pie">Pie Chart</SelectItem>
+              </SelectContent>
+            </Select>
             
-            {isAIChart && (
-              <div className="mt-3 px-4 text-center">
-                <p className="text-xs text-muted-foreground italic">
-                  {type === 'pca' && 'Principal components explaining 78% of variance'}
-                  {type === 'regression' && 'R² = 0.87, p < 0.001'}
-                  {type === 'clustering' && '3 clusters identified'}
-                  {type === 'decision-tree' && 'Tree depth: 4, Accuracy: 85%'}
-                  {type === 'feature-importance' && 'Top 5 features shown by importance'}
-                </p>
-              </div>
+            {chartType !== 'pie' && (
+              <>
+                <Select value={xAxis} onValueChange={setXAxis}>
+                  <SelectTrigger className="w-[110px]">
+                    <SelectValue placeholder="X Axis" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableColumns.map(column => (
+                      <SelectItem key={column} value={column}>{column}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Select value={yAxis} onValueChange={setYAxis}>
+                  <SelectTrigger className="w-[110px]">
+                    <SelectValue placeholder="Y Axis" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {numericColumns.map(column => (
+                      <SelectItem key={column} value={column}>{column}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </>
+            )}
+            
+            {chartType === 'pie' && (
+              <Select value={xAxis} onValueChange={setXAxis}>
+                <SelectTrigger className="w-[110px]">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableColumns.map(column => (
+                    <SelectItem key={column} value={column}>{column}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
           </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div style={{ width: '100%', height }}>
+          <ResponsiveContainer width="100%" height="100%">
+            {chartType === 'pie' ? (
+  <PieChart>
+    <Pie
+      data={processedData}
+      dataKey="value"
+      nameKey="name"
+      cx="50%"
+      cy="50%"
+      outerRadius={100}
+      label={(entry) => entry.name}
+    >
+      {processedData.map((entry, index) => (
+        <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+      ))}
+    </Pie>
+    <Tooltip />
+    <Legend />
+  </PieChart>
+) : chartType === 'bar' ? (
+  <BarChart data={processedData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey={xAxis} />
+    <YAxis />
+    <Tooltip />
+    <Legend />
+    <Bar dataKey={yAxis} fill={colors[0]} />
+  </BarChart>
+) : chartType === 'line' ? (
+  <LineChart data={processedData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey={xAxis} />
+    <YAxis />
+    <Tooltip />
+    <Legend />
+    <Line type="monotone" dataKey={yAxis} stroke={colors[0]} activeDot={{ r: 8 }} />
+  </LineChart>
+) : (
+  <AreaChart data={processedData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey={xAxis} />
+    <YAxis />
+    <Tooltip />
+    <Legend />
+    <Area type="monotone" dataKey={yAxis} stroke={colors[0]} fill={colors[0]} fillOpacity={0.3} />
+  </AreaChart>
+)}
+            
+            {chartType === 'pie' && (
+              <PieChart>
+                <Pie
+                  data={processedData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  label={(entry) => entry.name}
+                >
+                  {processedData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            )}
+          </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>
